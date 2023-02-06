@@ -3,7 +3,9 @@
 int main(void) {
    int baseInt;
    int headInt;
+   printf("Enter base Integer: ");
    scanf("%d",&baseInt);
+   printf("Enter head Integer: ");
    scanf("%d",&headInt);
 
    /* Type your code here. */
