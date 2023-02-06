@@ -1,0 +1,2 @@
+This is a basic test for git version control on mac termina lcommand line. 
+This should be committed with accordance to the objective. 
