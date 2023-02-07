@@ -19,7 +19,6 @@ int main(void) {
     scanf("%d", &currentPrice);
     scanf("%d", &lastMonthsPrice);
 
-    /* Type your code here. */
 
     printf("This house is $%d. ", currentPrice);
     printf("The change is $%d since last month.\n", currentPrice - lastMonthsPrice);
