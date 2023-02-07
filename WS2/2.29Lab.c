@@ -2,7 +2,7 @@
 * Description: Given three floating-point numbers x, y, and z, output x to the power of z,
 *			   x to the power of (y to the power of 2), the absolute value of y, and the square root of
 *			   (xy to the power of z).
-* Author names : Haroon and Vincent Nguyen
+* Author names : Haroon Razzack and Vincent Nguyen
 * Author emails : vincent.n.nguyen@sjsu.edu
 * Last modified date : 02 - 06 - 2023
 * Creation date : 02 - 06 - 2023
