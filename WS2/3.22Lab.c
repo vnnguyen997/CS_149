@@ -12,7 +12,6 @@
 
 int main(void) {
 
-    /* Type your code here. */
 
     int x, y, z;
 
