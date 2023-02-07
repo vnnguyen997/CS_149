@@ -1,6 +1,6 @@
 /**
  * Description: Aprogram using integers userNum and x as input, and output userNum divided by x three times.
- * Author names: Haroon and Vincent Nguyen
+ * Author names: Haroon Razzack and Vincent Nguyen
  * Author emails: vincent.n.nguyen@sjsu.edu
  * Last modified date: 02-06-2023
  * Creation date: 02-06-2023
