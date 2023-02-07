@@ -11,7 +11,6 @@
 
 int main(void) {
 
-    /* Type your code here. */
     int userNum, x;
 
     scanf("%d", &userNum);
