@@ -5,6 +5,7 @@
 #define MAX_NUM_NAMES 100
 
 int main(int argc, char *argv[]) {
+  // check if input arguments are correct 
   if (argc != 2) {
     fprintf(stderr, "Usage: countnames <filename>\n");
     return 1;
@@ -63,6 +64,6 @@ int main(int argc, char *argv[]) {
     printf("%s: %d\n", names[i], counts[i]);
   }
 
-  fclose(fp);
+  fclose(fp); //remember to close the file
   return 0;
 }
