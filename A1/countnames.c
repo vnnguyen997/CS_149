@@ -1,3 +1,10 @@
+/**
+ * Description: 
+ * Author names: Haroon Razzack and Vincent Nguyen
+ * Author emails: haroon.razzack@sjsu.edu and Vincent.Nguyen@sjsu.edu
+ * Last modified date: 2/20/2023
+ * Creation date: 2/20/2023 
+ **/
 #include <stdio.h>
 #include <string.h>
 
