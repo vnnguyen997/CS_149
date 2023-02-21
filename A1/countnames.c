@@ -27,7 +27,7 @@ int main(int argc, char *argv[]) {
   char line[MAX_NAME_LENGTH+2];  // +2 for the newline and null terminator
   int line_num = 0;
   while (fgets(line, sizeof(line), fp) != NULL) {
-    line_num++;
+    line_num++; // counting line number 
     if (line[0] == '\n') {
       fprintf(stderr, "Warning - Line %d is empty.\n", line_num);
       continue;
