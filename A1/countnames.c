@@ -1,5 +1,5 @@
 /**
- * Description: 
+ * Description: Take in a txt file full of names seperated by new lines as input and output the count of each unique name in the txt file. 
  * Author names: Haroon Razzack and Vincent Nguyen
  * Author emails: haroon.razzack@sjsu.edu and Vincent.Nguyen@sjsu.edu
  * Last modified date: 2/20/2023
