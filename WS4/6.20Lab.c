@@ -18,7 +18,6 @@ double LapsToMiles(double userLaps) {
 int main(void) {
 
     double userLaps;
-    //printf("Enter the number of laps ran: ");
     scanf("%lf", &userLaps);
     double miles = LapsToMiles(userLaps);
     printf("%0.2lf\n", miles);
