@@ -24,7 +24,8 @@ int main() {
         else if (pid == 0) {    // child (new process)
             printf("hello world from PID %d!\n", getpid());
             exit(0);
-        } else {
+        }
+        else {
             // parent process
         }
     }
