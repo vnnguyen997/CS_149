@@ -66,15 +66,22 @@ int readFile(const char* fileName) {
 int main(int argc, char *argv[]) {
 
     // check if input arguments are correct
-    if (argc != 2) {
-        fprintf(stderr, "Usage: countnames <filename>\n");
+    if (argc < 2) {
+        fprintf(stderr, "Usage: countnames_parallel <filename> <filename>...\n");
         return 1;
     }
 
+    // Loop over each filename and fork a process to process the file
     for (int i = 1; i < argc; i++) {
-        int ret = readFile(argv[i]);
-        if (ret != 0) {
-            return ret;
+        pid_t pid = fork();
+        if (pid == 0) {
+            // Child process
+            readFile(argv[i]);
+            exit(1);
+        } else if (pid < 0) {
+            // Error
+            fprintf(stderr, "Error: failed to fork\n");
+            return 1;
         }
     }
 
