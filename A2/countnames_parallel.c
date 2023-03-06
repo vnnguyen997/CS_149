@@ -4,16 +4,9 @@
 #define MAX_NAMES 100
 #define MAX_NAMES_LENGTH 30
 
-int main(int argc, char *argv[]) {
-
-    // check if input arguments are correct
-    if (argc != 2) {
-        fprintf(stderr, "Usage: countnames <filename>\n");
-        return 1;
-    }
-
+int readFile(const char* fileName) {
     // Open the input file
-    FILE *fp = fopen(argv[1], "r");
+    FILE *fp = fopen(fileName, "r");
     if (fp == NULL) {
         printf("Can't open file\n");
         return 1;
@@ -68,4 +61,23 @@ int main(int argc, char *argv[]) {
     }
 
     return 0;
+
+}
+int main(int argc, char *argv[]) {
+
+    // check if input arguments are correct
+    if (argc != 2) {
+        fprintf(stderr, "Usage: countnames <filename>\n");
+        return 1;
+    }
+
+    for (int i = 1; i < argc; i++) {
+        int ret = readFile(argv[i]);
+        if (ret != 0) {
+            return ret;
+        }
+    }
+
+    return 0;
+    
 }
