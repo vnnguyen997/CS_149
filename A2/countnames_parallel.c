@@ -1,21 +1,19 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
+#include <unistd.h>
+
 
 #define MAX_NAMES 100
 #define MAX_NAMES_LENGTH 30
 
-int readFile(const char* fileName) {
+int readFile(char *fileName, char lines[MAX_NAMES][MAX_NAMES_LENGTH], int counts[MAX_NAMES]) {
     // Open the input file
     FILE *fp = fopen(fileName, "r");
     if (fp == NULL) {
-        printf("Can't open file\n");
+        printf("Can't open file %s\n", fileName);
         return 1;
     }
-
-    // Initialize arrays for names and duplicate counts
-    char lines[MAX_NAMES][MAX_NAMES_LENGTH];
-    int counts[MAX_NAMES] = {0};
-    int num_names = 0;
 
     // Read names from the file and after each loop iteration of the while
     // line number is incremented.
@@ -31,10 +29,10 @@ int readFile(const char* fileName) {
         // Checking for an empty line otherwise it compares new names to each
         // of the names in the stored array, if a match is found, count is incremented
         if (strlen(line) == 0) {
-            fprintf(stderr,"Warning - Line %d is empty.\n", line_num);
+            fprintf(stderr,"Warning - Line %d in file %s is empty.\n", line_num, fileName);
         } else {
             int found = 0;
-            for (int i = 0; i < num_names; i++) {
+            for (int i = 0; i < MAX_NAMES; i++) {
                 if (strcmp(line, lines[i]) == 0) {
                     counts[i]++;
                     found = 1;
@@ -45,9 +43,13 @@ int readFile(const char* fileName) {
             // to the lines array, the number of names is incremented, and the count for that
             // name is incremented to 1.
             if (!found) {
-                strncpy(lines[num_names], line, sizeof(lines[num_names]));
-                counts[num_names]++;
-                num_names++;
+                for (int i = 0; i < MAX_NAMES; i++) {
+                    if (strlen(lines[i]) == 0) {
+                        strncpy(lines[i], line, MAX_NAMES_LENGTH);
+                        counts[i]++;
+                        break;
+                    }
+                }
             }
         }
         line_num++;
@@ -55,36 +57,63 @@ int readFile(const char* fileName) {
     // Close the file
     fclose(fp);
 
-    // Prints the names and their counts
-    for (int i = 0; i < num_names; i++) {
-        printf("%s: %d\n", lines[i], counts[i]);
-    }
-
     return 0;
-
 }
-int main(int argc, char *argv[]) {
 
-    // check if input arguments are correct
-    if (argc < 2) {
-        fprintf(stderr, "Usage: countnames_parallel <filename> <filename>...\n");
+
+
+int main(int argc, char *argv[]) {
+    char lines[MAX_NAMES][MAX_NAMES_LENGTH];
+    int counts[MAX_NAMES];
+    int num_files = argc - 1;
+    int ret = 0;
+
+    // Check for the correct number of command-line arguments
+    if (num_files < 1) {
+        fprintf(stderr, "Usage: countnames_parallel <filename> [<filename> ...]\n");
         return 1;
     }
 
-    // Loop over each filename and fork a process to process the file
-    for (int i = 1; i < argc; i++) {
+    // Initialize the lines and counts arrays
+    for (int i = 0; i < MAX_NAMES; i++) {
+        lines[i][0] = '\0';
+        counts[i] = 0;
+    }
+
+    // Read each input file by forking a child for each file.
+    for (int i = 1; i <= num_files; i++) {
         pid_t pid = fork();
-        if (pid == 0) {
-            // Child process
-            readFile(argv[i]);
-            exit(1);
-        } else if (pid < 0) {
-            // Error
-            fprintf(stderr, "Error: failed to fork\n");
+        if (pid < 0) {
+            fprintf(stderr, "Error forking process\n");
             return 1;
+        } else if (pid == 0) {
+            char *filename = argv[i];
+            int ret = readFile(filename, lines, counts);
+            if (ret != 0) {
+                fprintf(stderr, "Error processing file %s\n", filename);
+            }
+            exit(0);
+        }
+    }
+
+    /*
+    // Read each input file
+    for (int i = 1; i <= num_files; i++) {
+        char *filename = argv[i];
+        ret = readFile(filename, lines, counts);
+        if (ret != 0) {
+            fprintf(stderr, "Error processing file %s\n", filename);
+            break;
+        }
+    }
+    */
+
+    // Prints the names and their counts
+    for (int i = 0; i < MAX_NAMES; i++) {
+        if (strlen(lines[i]) > 0) {
+            printf("%s: %d\n", lines[i], counts[i]);
         }
     }
 
     return 0;
-    
 }
