@@ -1,61 +1,41 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include<stdio.h>
+#include<stdlib.h>
+#include <unistd.h>
+#include<string.h>
+#include <sys/wait.h>
 
-int main(void)
+int
+main(void)
 {
-    FILE * fp;
-    char * line = NULL;
-    size_t len = 0;
-    ssize_t read;
+    pid_t	pid;
+    int		status;
 
-    char newString[20][20];
-    int i,j,ctr;
+    char buf[10][10];
+    char *buf2[10];
+    buf[0][0] = 'l';
+    buf[0][1] = 's';
+    buf[0][2] = '\0';
+    buf[1][0] = '.';
+    buf[1][1] = '.';
+    buf[1][2] = '\0';
 
-
-    fp = fopen("names.txt", "r");
-    if (fp == NULL)
-        exit(EXIT_FAILURE);
-
-    while ((read = getline(&line, &len, fp)) != -1) {
-
-        printf("---------------------------------------\n");
-
-        printf("\n\n Split string by space into words :\n");
-
-        printf("Retrieved line of length %zu:\n", read);
-        printf("%s", line);
-
-
-        for (int i=0; i<20; i++)
-            for (int j=0; j<20; j++)
-                newString[i][j]=0;
+    buf2[0] = (char *)&buf[0][0];
+    buf2[1] = (char *)&buf[1][0];
+    buf2[2] = (char *)0;
 
 
 
-        j=0; ctr=0;
-        for(i=0;i<=(strlen(line));i++)
-        {
-            // if space or NULL found, assign NULL into newString[ctr]
-            if(line[i]==' '||line[i]=='\0')
-            {
-                newString[ctr][j]='\0';
-                ctr++;  //for next word
-                j=0;    //for next word, init index to 0
-            }
-            else
-            {
-                newString[ctr][j]=line[i];
-                j++;
-            }
-        }
-        printf("\n Strings or words after split by space are :\n");
-        for(i=0;i < ctr;i++)
-            printf(" %s\n",newString[i]);
+    if ((pid = fork()) < 0) {
+        printf("fork error");
+    } else if (pid == 0) {		/* child */
+        execvp(buf2[0], buf2);
+        printf("couldn't execute: %s", buf2[0]);
+        exit(127);
     }
 
-    fclose(fp);
-    if (line)
-        free(line);
-    exit(EXIT_SUCCESS);
+    /* parent */
+    if ((pid = waitpid(pid, &status, 0)) < 0)
+        printf("waitpid error");
+    printf("DONE ");
+    exit(0);
 }
