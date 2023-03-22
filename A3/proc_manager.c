@@ -4,32 +4,24 @@
 #include<string.h>
 #include <sys/wait.h>
 
-int
-main(void)
+#define MAX_COMMANDS 100
+#define MAX_COMMANDS_LENGTH 30
+
+int main(void)
 {
-    pid_t	pid;
-    int		status;
+    pid_t pid;
+    int status;
 
-    char buf[10][10];
-    char *buf2[10];
-    buf[0][0] = 'l';
-    buf[0][1] = 's';
-    buf[0][2] = '\0';
-    buf[1][0] = '.';
-    buf[1][1] = '.';
-    buf[1][2] = '\0';
-
-    buf2[0] = (char *)&buf[0][0];
-    buf2[1] = (char *)&buf[1][0];
-    buf2[2] = (char *)0;
-
+    // set up arrays for reading and holding commands
+    char commands[MAX_COMMANDS][MAX_COMMANDS_LENGTH];
+    char *args[MAX_COMMANDS_LENGTH];
 
 
     if ((pid = fork()) < 0) {
         printf("fork error");
     } else if (pid == 0) {		/* child */
-        execvp(buf2[0], buf2);
-        printf("couldn't execute: %s", buf2[0]);
+        execvp(args[0], args);
+        printf("couldn't execute: %s", args[0]);
         exit(127);
     }
 
