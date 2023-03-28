@@ -1,3 +1,14 @@
+/**
+ * Description: Program that takes an input character, then an input string,
+ * both are passed to a CalcNumCharacters function which count the number
+ * of occurreneces of the input character in the input string.
+ * Authors: Vincent Nguyen
+ * Author emails: vincent.n.nguyen@sjsu.edu
+ * Last modified date: 03-27-2023
+ * Creation date: 03-27-2023
+ */
+
+
 #include <stdio.h>
 #include <string.h>
 
