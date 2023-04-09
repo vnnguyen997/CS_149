@@ -1,3 +1,13 @@
+/**
+ * Description: This file contains the struct definition, including data members and related
+ * function declarations
+ * Authors: Vincent Nguyen
+ * Author emails: vincent.n.nguyen@sjsu.edu
+ * Last modified date: 04-09-2023
+ * Creation date: 04-09-2023
+ */
+
+
 #ifndef WS10_ITEMTOPURCHASE_H
 #define WS10_ITEMTOPURCHASE_H
 
@@ -8,7 +18,7 @@ typedef struct ItemToPurchase_struct {
     int itemQuantity;
 } ItemToPurchase;
 
-// create related functions
+// Function declarations
 // MakeItemBlank has a pointer to an ItemtoPurchase parameter
 void MakeItemBlank(ItemToPurchase *item);
 

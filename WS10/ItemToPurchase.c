@@ -1,3 +1,12 @@
+/**
+ * Description: This file holds the function definitons
+ * Authors: Vincent Nguyen
+ * Author emails: vincent.n.nguyen@sjsu.edu
+ * Last modified date: 04-09-2023
+ * Creation date: 04-09-2023
+ */
+
+
 #include<stdio.h>
 #include<string.h>
 

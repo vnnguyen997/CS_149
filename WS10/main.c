@@ -1,3 +1,14 @@
+/**
+ * Description: Program that reads in two items simulating a shopping cart.
+ * Making use of multiple files like ItemtoPurchase.h for struct definition, including data members
+ * and related function declarations. Also ItemToPurchase.c for related function definitions.
+ * Authors: Vincent Nguyen
+ * Author emails: vincent.n.nguyen@sjsu.edu
+ * Last modified date: 04-09-2023
+ * Creation date: 04-09-2023
+ */
+
+
 #include<stdio.h>
 #include<string.h>
 
