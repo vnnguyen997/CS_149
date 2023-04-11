@@ -26,6 +26,8 @@ struct TRACE_NODE_STRUCT {
 };
 typedef struct TRACE_NODE_STRUCT TRACE_NODE;
 static TRACE_NODE* TRACE_TOP = NULL; // ptr to the top of the stack
+
+
 /* --------------------------------*/
 /* function PUSH_TRACE */
 /*
@@ -163,6 +165,85 @@ void FREE(void* p,char* file,int line)
 #define malloc(a) MALLOC(a,__FILE__,__LINE__)
 #define free(a) FREE(a,__FILE__,__LINE__)
 // -----------------------------------------
+// Creating a linked list to hold the commands
+// index of the command in the linked list
+// a pointer to the command string
+struct COMMAND_NODE_STRUCT {
+    int index;
+    char* command;
+
+    // pointer to next node
+    struct COMMAND_NODE_STRUCT* next;
+};
+
+typedef struct COMMAND_NODE_STRUCT COMMAND_NODE;
+
+// pointer to the head of the list
+static COMMAND_NODE* COMMAND_TOP = NULL;
+
+// current index of the command
+static int COMMAND_INDEX = 0;
+
+
+// push commands into the linked list
+void PUSH_COMMAND(char* cmd)
+{
+    PUSH_TRACE("PUSH_COMMAND");
+    // declare the pointer to the new cnode
+    COMMAND_NODE* cnode;
+
+    // allocate memory, if null then exits
+    cnode = (COMMAND_NODE*) malloc(sizeof(COMMAND_NODE));
+    if (cnode == NULL) {
+        printf("PUSH_COMMAND: memory allocation error\n");
+        exit(1);
+    }
+    // set command to cmd, increment the command index in the linked list, set next as the old command_top
+    // this cnode is the new head of the command list
+    cnode->command = cmd;
+    cnode->index = COMMAND_INDEX++;
+    cnode->next = COMMAND_TOP;
+    COMMAND_TOP = cnode;
+    POP_TRACE();
+}
+
+// Pop a command from the stack
+void POP_COMMAND()
+{
+    PUSH_TRACE("POP_COMMAND");
+    COMMAND_NODE* cnode;
+    cnode = COMMAND_TOP;
+    COMMAND_TOP = cnode->next;
+    free(cnode);
+    POP_TRACE();
+}
+
+// clear commands to free up the entire linked list
+// while the head of the linked list isn't null, cnode is set to head, and head is set to next
+// then the cnode is freed, also resetting command index to 0
+void CLEAR_COMMANDS()
+{
+    PUSH_TRACE("CLEAR_COMMANDS");
+    COMMAND_NODE* cnode;
+    while (COMMAND_TOP != NULL) {
+        cnode = COMMAND_TOP;
+        COMMAND_TOP = COMMAND_TOP->next;
+        free(cnode);
+    }
+    COMMAND_INDEX = 0;
+    POP_TRACE();
+}
+
+// print the commands in the linked list
+void PRINT_COMMANDS()
+{
+    PUSH_TRACE("PRINT_COMMANDS");
+    COMMAND_NODE* cnode;
+    for (cnode = COMMAND_TOP; cnode != NULL; cnode = cnode->next) {
+        printf("array[%d] = %s\n", cnode->index, cnode->command);
+    }
+    POP_TRACE();
+}
 // function add_column will add an extra column to a 2d array of ints.
 // This function is intended to demonstrate how memory usage tracing of realloc is
 // done
