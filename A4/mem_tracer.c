@@ -3,7 +3,7 @@
  * traces the memory usage
  * Authors: Vincent Nguyen
  * Author emails: vincent.n.nguyen@sjsu.edu
- * Last modified date: 04-09-2023
+ * Last modified date: 04-10-2023
  * Creation date: 04-09-2023
  */
 
@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
+#include <unistd.h>
 /**
 * CS149 assignment#4 helper code.
 * See the TODO's in the comments below! You need to implement those.
@@ -164,6 +165,7 @@ void FREE(void* p,char* file,int line)
 #define realloc(a,b) REALLOC(a,b,__FILE__,__LINE__)
 #define malloc(a) MALLOC(a,__FILE__,__LINE__)
 #define free(a) FREE(a,__FILE__,__LINE__)
+#define MAX_INPUT_LENGTH 100
 // -----------------------------------------
 // Creating a linked list to hold the commands
 // index of the command in the linked list
@@ -240,7 +242,7 @@ void PRINT_COMMANDS()
     PUSH_TRACE("PRINT_COMMANDS");
     COMMAND_NODE* cnode;
     for (cnode = COMMAND_TOP; cnode != NULL; cnode = cnode->next) {
-        printf("array[%d] = %s\n", cnode->index, cnode->command);
+        printf("array[%d] = \"%s\"\n", cnode->index, cnode->command);
     }
     POP_TRACE();
 }
@@ -295,12 +297,87 @@ void make_extend_array()
     POP_TRACE();
     return;
 }//end make_extend_array
+
+
+// reads from stdin using fgets, pushes them to the command linked list
+// then prints them out
+void make_extend_command_array()
+{
+    PUSH_TRACE("make_extend_command_array");
+
+    // set the rows of the array to 10 and the index to 0
+    int ROW = 10;
+    int index = 0;
+
+    // initialize the array of pointers to null
+    int **array = NULL;
+
+    // allocate memory for the array of pointers and the input from stdin
+    array = (char **) malloc(sizeof(char) * ROW);
+    char *input = (char *) malloc(sizeof(char) * MAX_INPUT_LENGTH);
+
+    // Read commands from stdin and add them to the linked list
+    while (fgets(input, MAX_INPUT_LENGTH, stdin) != NULL) {
+
+        // Remove newline character at the end of line
+        if (input[strlen(input) - 1] == '\n') {
+            input[strlen(input) - 1] = '\0';
+        }
+
+        // Add the command to the linked list
+        PUSH_COMMAND(strdup(input));
+
+        // Increment the index
+        index++;
+
+        // Resize the array using realloc if necessary
+        if (index >= ROW) {
+            ROW += 10;
+            array = (char **) realloc(array, sizeof(char*) * ROW);
+        }
+        // Store the latest command into the last index of the
+        // commands array
+        array[index - 1] = strdup(input);
+    }
+
+    // print the commands
+    PRINT_COMMANDS();
+
+    // Free memory and return
+    for (int i = 0; i < index; i++) {
+        free(array[i]);
+    }
+
+    // free memory
+    free(input);
+    free((void*)array);
+    POP_TRACE();
+    return;
+}//end make_extend_commands_array
 // ----------------------------------------------
 // function main
 int main()
 {
+
+    // Open the memtrace.out file for writing
+    FILE *log_file = fopen("memtrace.out", "w");
+    if (log_file == NULL) {
+        perror("Error opening log file");
+        exit(1);
+    }
+
+    // Redirect stdout to the log file
+    int log_fd = fileno(log_file);
+    if (dup2(log_fd, STDOUT_FILENO) < 0) {
+        perror("Error redirecting stdout to log file");
+        exit(1);
+    }
+
     PUSH_TRACE("main");
-    make_extend_array();
+    make_extend_command_array();
     POP_TRACE();
+
+    // Close the log file
+    fclose(log_file);
     return(0);
 }// end main
