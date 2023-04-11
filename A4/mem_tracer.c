@@ -91,9 +91,9 @@ char* PRINT_TRACE()
         strcpy(buf,"global"); // still in the `global' area
         return buf;
     }
-/* peek at the depth(50) top entries on the stack, but do not
-go over 100 chars and do not go over the bottom of the
-stack */
+    /* peek at the depth(50) top entries on the stack, but do not
+    go over 100 chars and do not go over the bottom of the
+    stack */
     sprintf(buf,"%s",TRACE_TOP->functionid);
     length = strlen(buf); // length of the string so far
     for(i=1, tnode=TRACE_TOP->next;
@@ -108,6 +108,7 @@ stack */
     }
     return buf;
 } /*end PRINT_TRACE*/
+
 // -----------------------------------------
 // function REALLOC calls realloc
 // TODO REALLOC should also print info about memory usage.
@@ -120,6 +121,8 @@ stack */
 void* REALLOC(void* p,int t,char* file,int line)
 {
     p = realloc(p,t);
+    printf("File %s, line %d, function %s reallocated the memory segment at address %p to a new size %d\n",
+           file, line, PRINT_TRACE(), p, t);
     return p;
 }
 // -------------------------------------------
@@ -135,6 +138,8 @@ void* MALLOC(int t,char* file,int line)
 {
     void* p;
     p = malloc(t);
+    printf("File %s, line %d, function %s allocated the new memory segment at address %p to size %d\n",
+           file, line, PRINT_TRACE(), p, t);
     return p;
 }
 // ----------------------------------------------
@@ -148,6 +153,8 @@ void* MALLOC(int t,char* file,int line)
 // PRINT_TRACE)
 void FREE(void* p,char* file,int line)
 {
+    printf("File %s, line %d, function %s deallocated the memory segment at address %p\n",
+           file, line, PRINT_TRACE(), p);
     free(p);
 }
 #define realloc(a,b) REALLOC(a,b,__FILE__,__LINE__)
