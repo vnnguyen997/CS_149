@@ -42,10 +42,10 @@ void PUSH_TRACE(char* p) // push p on the stack
     TRACE_NODE* tnode;
     static char glob[]="global";
     if (TRACE_TOP==NULL) {
-// initialize the stack with "global" identifier
+        // initialize the stack with "global" identifier
         TRACE_TOP=(TRACE_NODE*) malloc(sizeof(TRACE_NODE));
-// no recovery needed if allocation failed, this is only
-// used in debugging, not in production
+        // no recovery needed if allocation failed, this is only
+        // used in debugging, not in production
         if (TRACE_TOP==NULL) {
             printf("PUSH_TRACE: memory allocation error\n");
             exit(1);
@@ -53,10 +53,10 @@ void PUSH_TRACE(char* p) // push p on the stack
         TRACE_TOP->functionid = glob;
         TRACE_TOP->next=NULL;
     }//if
-// create the node for p
+    // create the node for p
     tnode = (TRACE_NODE*) malloc(sizeof(TRACE_NODE));
-// no recovery needed if allocation failed, this is only
-// used in debugging, not in production
+    // no recovery needed if allocation failed, this is only
+    // used in debugging, not in production
     if (tnode==NULL) {
         printf("PUSH_TRACE: memory allocation error\n");
         exit(1);
@@ -65,6 +65,7 @@ void PUSH_TRACE(char* p) // push p on the stack
     tnode->next = TRACE_TOP; // insert fnode as the first in the list
     TRACE_TOP=tnode; // point TRACE_TOP to the first node
 }/*end PUSH_TRACE*/
+
 /* --------------------------------*/
 /* function POP_TRACE */
 /* Pop a function call from the stack */
@@ -75,6 +76,7 @@ void POP_TRACE() // remove the op of the stack
     TRACE_TOP = tnode->next;
     free(tnode);
 }/*end POP_TRACE*/
+
 /* ---------------------------------------------- */
 /* function PRINT_TRACE prints out the sequence of function calls that are on the
 stack at this instance */
@@ -188,24 +190,24 @@ void make_extend_array()
     int **array;
     int ROW = 4;
     int COL = 3;
-//make array
+    //make array
     array = (int**) malloc(sizeof(int*)*4); // 4 rows
     for(i=0; i<ROW; i++) {
         array[i]=(int*) malloc(sizeof(int)*3); // 3 columns
         for(j=0; j<COL; j++)
             array[i][j]=10*i+j;
     }//for
-//display array
+    //display array
     for(i=0; i<ROW; i++)
         for(j=0; j<COL; j++)
             printf("array[%d][%d]=%d\n",i,j,array[i][j]);
-// and a new column
+    // and a new column
     int NEWCOL = add_column(array,ROW,COL);
-// now display the array again
+    // now display the array again
     for(i=0; i<ROW; i++)
         for(j=0; j<NEWCOL; j++)
             printf("array[%d][%d]=%d\n",i,j,array[i][j]);
-//now deallocate it
+    //now deallocate it
     for(i=0; i<ROW; i++)
         free((void*)array[i]);
     free((void*)array);
