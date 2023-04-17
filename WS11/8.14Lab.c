@@ -73,11 +73,11 @@ int main(void) {
     ContactNode* currNode = headNode;
     for (int i = 1; i <= 3; i++) {
 
-        // Prompt the client for a contact name, read in from stdin, remove newline
+        // Read in from stdin, remove newline
         fgets(name, 50, stdin);
         name[strcspn(name, "\n")] = '\0';
 
-        // Prompt the client for a contact phone number, read in from stdin, remove newline
+        // Read in from stdin, remove newline
         fgets(phone, 50, stdin);
         phone[strcspn(phone, "\n")] = '\0';
 
