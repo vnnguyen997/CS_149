@@ -94,7 +94,6 @@ int main(void) {
         currNode = GetNext(currNode);
     }
 
-    // Print each node
     // Set current node to the headNodes nextNodePtr
     currNode = headNode->nextNodePtr;
     int count = 1;
