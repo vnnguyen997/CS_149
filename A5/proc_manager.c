@@ -14,6 +14,8 @@
 #include <string.h>
 #include <sys/wait.h>
 #include <fcntl.h>
+#include <time.h>
+
 
 struct nlist { /* table entry: */
     struct nlist *next; /* next entry in chain */
@@ -112,7 +114,7 @@ int main(void)
     char out_file[20], err_file[20];
 
     // set up arrays for reading and holding commands
-    char commands[MAX_COMMANDS][MAX_COMMANDS_LENGTH];
+    char *commands[MAX_COMMANDS][MAX_COMMANDS_LENGTH];
     char *args[MAX_COMMANDS_LENGTH];
 
     // read commands from stdin
@@ -154,7 +156,7 @@ int main(void)
             dup2(err_fd, 2);
 
             // print start command
-            printf("Starting command %d: child %d pid of parent %d)\n",
+            printf("(Child) Starting command %d: child %d pid of parent %d)\n",
                    command_count, getpid(), getppid());
             fflush(stdout);
 
@@ -165,9 +167,30 @@ int main(void)
 
             close(out_fd);
             close(err_fd);
-        }
+        } else { /* parent */
+            // add the command, pid, and index to nlist hashtable
+            struct nlist *nlist_command = insert(commands[i], pid, i);
 
+            //set the start time
+            clock_gettime(CLOCK_MONOTONIC, &nlist_command->starttime);
+
+            // create files for parent
+            sprintf(out_file, "%d.out", getpid());
+            sprintf(err_file, "%d.err", getpid());
+            int out_fd = open(out_file, O_RDWR | O_CREAT | O_APPEND, 0777);
+            int err_fd = open(err_file, O_RDWR | O_CREAT | O_APPEND, 0777);
+
+            // redirect stdout and stderr to output and error files
+            dup2(out_fd, 1);
+            dup2(err_fd, 2);
+
+            // print start command using nlist_command index, pid, and getpid since we're inside parent
+            printf("(Parent) Starting command %d: child %d pid of parent %d)\n",
+                   nlist_command->index, nlist_command->pid, getpid());
+            fflush(stdout);
+        }
     }
+
     /* parent */
     while ((wait ( NULL) != -1) ) {
         // create files for each child
