@@ -1,10 +1,12 @@
 /**
  * Description: Program that executes multiple commands at the same time using fork.
  * Commands are read in through stdin, each command consists of the system call and the argument,
- * each child process creates output files, error files, and executes the commands.
+ * each child process creates output files, error files, and executes the commands. The commands
+ * are stored in a hash table provided by the professor with slight adjustments. This program
+ * measures the amount of time it takes for a process to be start and finished.
  * Authors: Vincent Nguyen
  * Author emails: vincent.n.nguyen@sjsu.edu
- * Last modified date: 04-25-2023
+ * Last modified date: 04-26-2023
  * Creation date: 04-24-2023
  */
 
@@ -114,7 +116,7 @@ int main(void)
     char out_file[20], err_file[20];
 
     // set up arrays for reading and holding commands
-    char *commands[MAX_COMMANDS][MAX_COMMANDS_LENGTH];
+    char commands[MAX_COMMANDS][MAX_COMMANDS_LENGTH];
     char *args[MAX_COMMANDS_LENGTH];
 
     // read commands from stdin
@@ -167,7 +169,7 @@ int main(void)
 
             close(out_fd);
             close(err_fd);
-        } else { /* parent */
+        } else if (pid > 0){ /* parent */
             // add the command, pid, and index to nlist hashtable
             struct nlist *nlist_command = insert(commands[i], pid, i);
 
@@ -192,26 +194,129 @@ int main(void)
     }
 
     /* parent */
-    while ((wait ( NULL) != -1) ) {
+    while ((pid = wait ( &status)) > 0) {
         // create files for each child
         sprintf(out_file, "%d.out", getpid());
         sprintf(err_file, "%d.err", getpid());
         int out_fd = open(out_file, O_RDWR | O_CREAT | O_APPEND, 0777);
         int err_fd = open(err_file, O_RDWR | O_CREAT | O_APPEND, 0777);
 
+        // Finished child process
         printf("Finished child %d pid of parent %d", getpid(), getppid());
+        fflush(stdout);
+
+        // look up the command node
+        struct nlist *get_command = lookup(pid);
+
+        // set the finish time of the command
+        clock_gettime(CLOCK_MONOTONIC, &get_command->finishtime);
+
+        // Get elapsed time to finish command
+        double elapsed = (get_command->finishtime.tv_sec - get_command->starttime.tv_sec);
+
+        // Print the finished time and elapsed time
+        printf("Finished at %ld, runtime duration %f\n", get_command->finishtime.tv_sec, elapsed);
+
         if (WIFEXITED(status)) {
             // redirect stdout and stderr to output and error files
             dup2(out_fd, 1);
             fprintf(stderr, "Exited with exitcode = %d\n", WEXITSTATUS(status));
+            if (elapsed <= 2){
+                fprintf(stderr, "spawning too fast\n");
+            }
         } else if (WIFSIGNALED(status)) {
             dup2(err_fd, 2);
             fprintf(stderr, "Killed with signal %d\n", WTERMSIG(status));
+            if (elapsed <= 2){
+                fprintf(stderr, "spawning too fast\n");
+            }
         }
+
+        // if the elapsed duration for the restart
+        if (elapsed > 2) {
+            // copy command
+            char *command_dup = my_strdup(get_command->command);
+
+            // set index
+            i = get_command->index;
+
+            // fork child process
+            if ((pid = fork()) < 0) {
+                printf("fork error");
+            } else if (pid == 0) {        /* child */
+                // create files for each child
+                sprintf(out_file, "%d.out", getpid());
+                sprintf(err_file, "%d.err", getpid());
+                int out_fd = open(out_file, O_RDWR | O_CREAT | O_APPEND, 0777);
+                int err_fd = open(err_file, O_RDWR | O_CREAT | O_APPEND, 0777);
+
+                // redirect stdout and stderr to output and error files
+                dup2(out_fd, 1);
+                dup2(err_fd, 2);
+
+                // print start command
+                printf("(Child) Starting command %d: child %d pid of parent %d)\n",
+                       i, getpid(), getppid());
+                fflush(stdout);
+
+                // create array for argument tokens
+                char *args[20];
+
+                // create tokens from copied command that needed to be restarted
+                char *token = strtok(command_dup, " \n");
+
+                // j keeps track of arguments in copied command
+                int j = 0;
+
+                // while token isn't null, save tokens to args array
+                while (token != NULL) {
+                    args[j] = token;
+                    j++;
+                    //sets token pointer to null or to new token
+                    token = strtok(NULL, " \n");
+                }
+
+                // set end of arguments to NULL for execvp
+                args[j] = NULL;
+
+
+                // execute commands
+                execvp(args[0], args);
+                printf("couldn't execute: %s", args[0]);
+                exit(127);
+
+                close(out_fd);
+                close(err_fd);
+            } else if (pid > 0) { /* parent */
+                // add the command, pid, and index to nlist hashtable
+                struct nlist *nlist_command = insert(commands[i], pid, i);
+
+                //set the start time
+                clock_gettime(CLOCK_MONOTONIC, &nlist_command->starttime);
+
+                // create files for parent
+                sprintf(out_file, "%d.out", getpid());
+                sprintf(err_file, "%d.err", getpid());
+                int out_fd = open(out_file, O_RDWR | O_CREAT | O_APPEND, 0777);
+                int err_fd = open(err_file, O_RDWR | O_CREAT | O_APPEND, 0777);
+
+                // redirect stdout and stderr to output and error files
+                dup2(out_fd, 1);
+                dup2(err_fd, 2);
+
+                printf("RESTARTING\n");
+
+                // print start command using nlist_command index, pid, and getpid since we're inside parent
+                printf("(Parent) Starting command %d: child %d pid of parent %d)\n",
+                       nlist_command->index, nlist_command->pid, getpid());
+                fflush(stdout);
+            }
+        }
+
         close(out_fd);
         close(err_fd);
     }
 
 
-    exit(0);
+    return 0;
 }
