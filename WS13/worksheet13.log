@@ -1,0 +1,22 @@
+    1  rsync -arv filedir/ filedir1/
+    2  cp -r filedir/ filedir2/
+    3  ls -latr filedir1/
+    4  ls -latr filedir2/
+    5  cd filedir1
+    6  ls -la
+    7  du -h
+    8  du Makefile
+    9  ls -a
+   10  ls -l
+   11  stat mycd.c
+   12  history > worksheet13.log
+
+
+
+
+Editing the log file to answer the question about the two directories.
+
+From what I can see, the files in filedir1/ were copied over and the date wasn't modified. It retained
+the original date that it may have been created, which happened to be around early March.1
+
+However, for filedir2/, the dates were modified to todays date which is April 28th.
