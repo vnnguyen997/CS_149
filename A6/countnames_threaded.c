@@ -78,6 +78,73 @@ struct NAME_NODE
     THREAD_NAME name_count;
     struct NAME_NODE *next;
 };
+
+// Reusing the implementation of hash table in A5
+// Replacing all the instances of pid use with name
+#define HASHSIZE 100
+static struct NAME_NODE *hashtab[HASHSIZE]; /* pointer table */
+
+// This is the hash function: form hash value for pid
+int hash(char name)
+{
+    return name % HASHSIZE;
+}
+
+// lookup: look for entry with given name in hashtab
+struct NAME_NODE *lookup(char* name)
+{
+    struct NAME_NODE *np;
+
+    // have to pass in the first letter of name since the hash takes in a char value
+    for (np = hashtab[hash(name[0])]; np != NULL; np = np->next)
+
+        // check if name is in the hashtable
+        if (name == np->name_count.name)
+            return np; /* found */
+    return NULL; /* not found */
+}
+
+char *my_strdup(char *);
+
+
+struct NAME_NODE *insert(char* name)
+{
+    struct NAME_NODE *np;
+
+    // Check to see if the name is in the hashtable
+    if ((np = lookup(name)) == NULL) {
+
+        // if not then allocate memory for the name
+        np = (struct NAME_NODE *) malloc(sizeof(*np));
+        if (np == NULL)
+            return NULL;
+
+        // set the name count to 1
+        np->name_count.count = 1;
+
+        // have to pass in the first letter of name since the hash takes in a char value
+        int hashval = hash(name[0]);
+
+        // set next in NAME_NODE to the new NAME_NODE
+        np->next = hashtab[hashval];
+
+        // set the head of the linked list to the newly created NAME_NODE
+        hashtab[hashval] = np;
+    } else {
+        // if name is already there then increment the count
+        np->name_count.count = np->name_count.count++;
+    }
+    return np;
+}
+
+char *my_strdup(char *s) /* make a duplicate of s */
+{
+    char *p;
+    p = (char *) malloc(strlen(s)+1); /* +1 for ’\0’ */
+    if (p != NULL)
+        strcpy(p, s);
+    return p;
+}
 /*********************************************************
 // function main
 *********************************************************/
