@@ -106,7 +106,7 @@ struct NAME_NODE *lookup(char* name)
 
 char *my_strdup(char *);
 
-
+// Insert the name_node into the hashtable
 struct NAME_NODE *insert(char* name)
 {
     struct NAME_NODE *np;
@@ -184,6 +184,7 @@ void* thread_runner(void* x)
 {
     pthread_t me;
     me = pthread_self();
+    char* filename = (char*) x;
     printf("This is thread %ld (p=%p)",me,p);
 
 
@@ -200,6 +201,34 @@ void* thread_runner(void* x)
     } else {
         printf("This is thread %ld and I can access the THREADDATA %p",me,p);
     }
+
+    // Open the file and read names, A2 solution modified slightly
+    FILE *fp = fopen(filename, "r");
+    if (fp == NULL) {
+        fprintf(stderr, "Can't open file: %s\n", filename);
+    } else {
+        // Read names from the file and after each loop iteration of the while
+        // line number is incremented.
+        char line[MAX_NAMES_LENGTH];
+        int line_num = 1;
+        while (fgets(line, sizeof(line), fp)) {
+            // Remove newline character at the end of line
+            if (line[strlen(line) - 1] == '\n') {
+                line[strlen(line) - 1] = '\0';
+            }
+
+            // Checking for an empty line otherwise it compares new names to each
+            // of the names in the stored array, if a match is found, count is incremented
+            if (strlen(line) == 0) {
+                fprintf(stderr,"Warning - Line %d in %s is empty.\n", line_num, filename);
+            }
+            line_num++;
+        }
+        // Close the file
+        fclose(fp);
+        exit(0);
+    }
+}
 /**
 * //TODO implement any thread name counting functionality you need.
 * Assign one file per thread. Hint: you can either pass each argv filename as a
