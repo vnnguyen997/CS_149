@@ -132,7 +132,7 @@ struct NAME_NODE *insert(char* name)
         hashtab[hashval] = np;
     } else {
         // if name is already there then increment the count
-        np->name_count.count = np->name_count.count++;
+        np->name_count.count++;
     }
     return np;
 }
@@ -150,7 +150,7 @@ char *my_strdup(char *s) /* make a duplicate of s */
 *********************************************************/
 int main(int argc, char *argv[])
 {
-//TODO similar interface as A2: give as command-line arguments three filenames of
+// similar interface as A2: give as command-line arguments three filenames of
 // numbers (the numbers in the files are newline-separated).
     if (argc != 3) {
         printf("Usage: program <file1> <file2>\n");
@@ -174,7 +174,17 @@ int main(int argc, char *argv[])
     printf("wait for second thread to exit");
     pthread_join(tid2,NULL);
     printf("second thread exited");
-//TODO print out the sum variable with the sum of all the numbers
+
+
+    //print out the sum variable with the sum of all the numbers
+    struct NAME_NODE *np;
+    for (int i = 0; i < HASHSIZE; i++) {
+        np = hashtab[i];
+        while(np != NULL) {
+            printf("%s: %d\n", np->name_count.name, np->name_count.count);
+            np = np->next;
+        }
+    }
     exit(0);
 }//end main
 /**********************************************************************
@@ -209,7 +219,7 @@ void* thread_runner(void* x)
     } else {
         // Read names from the file and after each loop iteration of the while
         // line number is incremented.
-        char line[MAX_NAMES_LENGTH];
+        char line[30];
         int line_num = 1;
         while (fgets(line, sizeof(line), fp)) {
             // Remove newline character at the end of line
@@ -223,12 +233,26 @@ void* thread_runner(void* x)
                 fprintf(stderr,"Warning - Line %d in %s is empty.\n", line_num, filename);
             }
             line_num++;
+
+            // Look up the NAME_NODE of the name on read from the line
+            struct NAME_NODE *np = lookup(line);
+
+            // Mutual Exclusion lock for name counts
+            pthread_mutex_lock(&tlock3);
+            // Increment the count of the name
+            if (np == NULL) {
+                insert(line);
+            } else {
+                np->name_count.count++;
+            }
+            // Unlock the lock
+            pthread_mutex_unlock(&tlock3);
         }
         // Close the file
         fclose(fp);
         exit(0);
     }
-}
+
 /**
 * //TODO implement any thread name counting functionality you need.
 * Assign one file per thread. Hint: you can either pass each argv filename as a
