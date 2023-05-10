@@ -137,6 +137,33 @@ struct NAME_NODE *insert(char* name)
     return np;
 }
 
+// Function to free the NAME_NODE objects in the hash table
+void free_name_nodes() {
+    for (int i = 0; i < HASHSIZE; i++) {
+        struct NAME_NODE *np = hashtab[i];
+        while (np != NULL) {
+            struct NAME_NODE *temp = np;
+            np = np->next;
+            free(temp);
+        }
+    }
+}
+
+// adding a logprint to print out the logs
+void logprint(char *message)
+{
+    time_t t = time(NULL);
+    struct tm *tm_info = localtime(&t);
+    char time_str[26];
+    strftime(time_str, 26, "%Y-%m-%d %H:%M:%S", tm_info);
+
+    pthread_mutex_lock(&tlock1);
+    int log_index = ++(*logip);
+    pthread_t me = pthread_self();
+    printf("Logindex %d, thread %ld, PID %ld, %s: %s\n", log_index, me, pthread_self(), time_str, message);
+    pthread_mutex_unlock(&tlock1);
+}
+
 char *my_strdup(char *s) /* make a duplicate of s */
 {
     char *p;
@@ -156,10 +183,6 @@ int main(int argc, char *argv[])
         printf("Usage: program <file1> <file2>\n");
         return 1;
     }
-
-    THREADDATA td1, td2;
-    strcpy(td1.filename, argv[1]);
-    strcpy(td2.filename, argv[2]);
 
     printf("create first thread");
     pthread_create(&tid1,NULL,thread_runner,argv[1]);
@@ -185,32 +208,25 @@ int main(int argc, char *argv[])
             np = np->next;
         }
     }
+    free_name_nodes();
     exit(0);
 }//end main
 /**********************************************************************
 // function thread_runner runs inside each thread
 **********************************************************************/
-void* thread_runner(void* x)
-{
+void* thread_runner(void* x) {
     pthread_t me;
     me = pthread_self();
-    char* filename = (char*) x;
-    printf("This is thread %ld (p=%p)",me,p);
+    char *filename = (char *) x;
+    printf("This is thread %ld (p=%p)", me, p);
 
 
     pthread_mutex_lock(&tlock2); // critical section starts
-    if (p==NULL) {
-        p = (THREADDATA*) malloc(sizeof(THREADDATA));
-        p->creator=me;
+    if (p == NULL) {
+        p = (THREADDATA *) malloc(sizeof(THREADDATA));
+        p->creator = me;
     }
     pthread_mutex_unlock(&tlock2); // critical section ends
-
-
-    if (p!=NULL && p->creator==me) {
-        printf("This is thread %ld and I created THREADDATA %p",me,p);
-    } else {
-        printf("This is thread %ld and I can access the THREADDATA %p",me,p);
-    }
 
     // Open the file and read names, A2 solution modified slightly
     FILE *fp = fopen(filename, "r");
@@ -230,7 +246,7 @@ void* thread_runner(void* x)
             // Checking for an empty line otherwise it compares new names to each
             // of the names in the stored array, if a match is found, count is incremented
             if (strlen(line) == 0) {
-                fprintf(stderr,"Warning - Line %d in %s is empty.\n", line_num, filename);
+                fprintf(stderr, "Warning - Line %d in %s is empty.\n", line_num, filename);
             }
             line_num++;
 
@@ -250,31 +266,18 @@ void* thread_runner(void* x)
         }
         // Close the file
         fclose(fp);
-        exit(0);
+        logprint("Thread finished processing file");
     }
 
-/**
-* //TODO implement any thread name counting functionality you need.
-* Assign one file per thread. Hint: you can either pass each argv filename as a
-thread_runner argument from main.
-* Or use the logindex to index argv, since every thread will increment the logindex anyway
-* when it opens a file to print a log message (e.g. logindex could also index
-argv)....
-* //Make sure to use any mutex locks appropriately
-*/
-// TODO use mutex to make this a start of a critical section
-// critical section starts
-    if (p!=NULL && p->creator==me) {
-        printf("This is thread %ld and I delete THREADDATA",me);
-/**
-* TODO Free the THREADATA object.
-* Freeing should be done by the same thread that created it.
-* See how the THREADDATA was created for an example of how this is done.
-*/
+    pthread_mutex_lock(&tlock2);
+    if (p != NULL && p->creator == me) {
+        printf("This is thread %ld and I created THREADDATA %p", me, p);
+        free(p);
     } else {
-        printf("This is thread %ld and I can access the THREADDATA",me);
+        printf("This is thread %ld and I can access the THREADDATA %p", me, p);
     }
-// TODO critical section ends
+    pthread_mutex_unlock(&tlock2);
     pthread_exit(NULL);
-//return NULL;
-}//end thread_runner
+
+
+}
